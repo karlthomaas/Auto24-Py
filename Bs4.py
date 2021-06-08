@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import unidecode
 
 
 class WebScrape:
@@ -60,12 +61,58 @@ class WebScrape:
                 # 7  ->
                 self.cars_dict[f'car{i}'] = {}
                 self.cars_dict[f'car{i}']['name'] = car_name
-                self.cars_dict[f'car{i}']['model'] = car_model
-                self.cars_dict[f'car{i}']['engine'] = car_engine
+                # self.cars_dict[f'car{i}']['model'] = car_model
+                # self.cars_dict[f'car{i}']['engine'] = car_engine
                 self.cars_dict[f'car{i}']['link'] = car_page
 
             except AttributeError:
                 ...
 
-obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1991&f1=1987&ssid=13529292')
+    def main_results(self):
 
+        """
+        Script goes to new site and starts to harvest information from there.
+        1. Does a for cycle, in order to get all key values
+        2. takes they car dictionary link and assigns it into result object
+        3. Finds the main-data column
+        4. Starts to get all the details from the for cycle
+        5. Takes the detail text
+        6. Splits it by \n
+        7. Takes the detail key  and removes the ":" behind the str, also converts the str into lower case.
+        8. Takes the detail value and assigns it to a variable
+        9. Fixes \xa0 problem.
+        10. Adds the details into dictionary.
+        """
+
+        for key in self.cars_dict.keys():  # 1
+            result = requests.get(self.cars_dict[key]['link'])  # 2
+            rc = result.content
+            soup = BeautifulSoup(rc, features='html.parser')
+
+            main_data = soup.find(class_='main-data')  # 3
+            sektsioonid = main_data.find_all('tr')
+
+            # võtab iga lahtri
+            for sektsioon in sektsioonid:  # 4
+
+                tekst = sektsioon.get_text()  # 5
+                tl = tekst.split('\n')  # 6
+
+                # 7 ->
+                car_key_old = tl[1]
+                car_key = car_key_old[:-1].lower()
+
+                # 8
+                car_value = tl[2]
+
+                # 9
+                car_value = unidecode.unidecode(car_value)
+
+                # 10
+                self.cars_dict[key][car_key] = car_value
+
+
+obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1996&f1=1991&ssid=13532610')
+obj.results()
+obj.main_results()
+print(obj.cars_dict)
