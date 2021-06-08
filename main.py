@@ -1,11 +1,11 @@
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 from Bs4 import WebScrape
 wb = Workbook()
 ws = wb.active
 ws.title = 'Vehicles'
 print('Excel file has been created!')
 
-link = 'https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=2056&f2=2017&f1=2010&ssid=13583435'
+link = 'https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=989&f2=2017&f1=2007&ssid=13586566'
 webscraping = WebScrape(link)
 webscraping.results()
 webscraping.main_results()
