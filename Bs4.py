@@ -51,8 +51,8 @@ class WebScrape:
                 # c_d -> car description
                 c_d = result.find(class_='description')
                 car_name = c_d.find('span').get_text()
-                car_model = c_d.find(class_='model').get_text()
-                car_engine =c_d.find(class_='engine').get_text()
+                # car_model = c_d.find(class_='model').get_text()
+                # car_engine =c_d.find(class_='engine').get_text()
                 car_page = f"https://www.auto24.ee/{c_d.find('a').get('href')}"
 
                 # 6 ->
@@ -72,14 +72,14 @@ class WebScrape:
 
         """
         Script goes to new site and starts to harvest information from there.
-        1. Does a for cycle, in order to get all key values
-        2. takes they car dictionary link and assigns it into result object
-        3. Finds the main-data column
-        4. Starts to get all the details from the for cycle
-        5. Takes the detail text
-        6. Splits it by \n
+        1. Does a for cycle, in order to get all key values.
+        2. takes they car dictionary link and assigns it into result object.
+        3. Finds the main-data column.
+        4. Starts to get all the details from the for cycle.
+        5. Takes the detail text.
+        6. Splits it by \n.
         7. Takes the detail key  and removes the ":" behind the str, also converts the str into lower case.
-        8. Takes the detail value and assigns it to a variable
+        8. Takes the detail value and assigns it to a variable.
         9. Fixes \xa0 problem.
         10. Adds the details into dictionary.
         """
@@ -93,6 +93,7 @@ class WebScrape:
             sektsioonid = main_data.find_all('tr')
 
             # võtab iga lahtri
+            # todo reg. number ja vin.kood on liiga pikad, tuleb kas eemaldada või siis teha lühemaks.
             for sektsioon in sektsioonid:  # 4
 
                 tekst = sektsioon.get_text()  # 5
@@ -104,15 +105,19 @@ class WebScrape:
 
                 # 8
                 car_value = tl[2]
-
+                if car_value:
+                    ...
+                else:
+                    car_value = '-'
                 # 9
                 car_value = unidecode.unidecode(car_value)
 
                 # 10
                 self.cars_dict[key][car_key] = car_value
 
+    def get_dict(self):
+        return self.cars_dict
 
-obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1996&f1=1991&ssid=13532610')
+obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1991&f1=1987&ssid=13529292')
 obj.results()
 obj.main_results()
-print(obj.cars_dict)
