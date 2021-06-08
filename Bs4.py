@@ -23,6 +23,39 @@ class WebScrape:
         tag_list = tag.split(' ')
         return ' '.join(tag_list[0:2])
 
+    def results(self):
+        results_section = self.soup.find(class_='section search-list')
+        # removes the unnecessary tags from the tree
+        results_section.find(class_='insearch-offers-wrap').decompose()
+        results_section.find(class_='c2z-section').decompose()
 
-obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=149&f2=2009&f1=2002&ssid=13532063')
+        results = results_section.find_all('div')
 
+
+        for result in results:
+            try:
+                c_t = result.find(class_='title')
+                car_name = c_t.find('span').get_text()
+                car_model = c_t.find(class_='model').get_text()
+                car_engine =c_t.find(class_='engine').get_text()
+
+                car_page = f"https://www.auto24.ee/{c_t.find('a').get('href')}"
+                print(car_page)
+                car_dict = {
+                    'name': car_name,
+                    'model': car_model,
+                    'engine': car_engine,
+                    'site': car_page
+                }
+                print(car_dict)
+            except AttributeError:
+                ...
+
+        # for result in results:
+        #     try:
+        #         car_description = result.find(class_='description')
+        #         print(car_description.find(class_='title').get_text())
+        #     except AttributeError:
+        #         ...
+obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1991&f1=1987&ssid=13529292')
+obj.results()
