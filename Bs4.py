@@ -51,8 +51,6 @@ class WebScrape:
                 # c_d -> car description
                 c_d = result.find(class_='description')
                 car_name = c_d.find('span').get_text()
-                # car_model = c_d.find(class_='model').get_text()
-                # car_engine =c_d.find(class_='engine').get_text()
                 car_page = f"https://www.auto24.ee/{c_d.find('a').get('href')}"
 
                 # 6 ->
@@ -61,8 +59,6 @@ class WebScrape:
                 # 7  ->
                 self.cars_dict[f'car{i}'] = {}
                 self.cars_dict[f'car{i}']['name'] = car_name
-                # self.cars_dict[f'car{i}']['model'] = car_model
-                # self.cars_dict[f'car{i}']['engine'] = car_engine
                 self.cars_dict[f'car{i}']['link'] = car_page
 
             except AttributeError:
@@ -114,10 +110,103 @@ class WebScrape:
 
                 # 10
                 self.cars_dict[key][car_key] = car_value
+        print(self.cars_dict)
 
     def get_dict(self):
         return self.cars_dict
 
-obj = WebScrape('https://www.auto24.ee/kasutatud/nimekiri.php?b=2&ae=2&bw=301&f2=1991&f1=1987&ssid=13529292')
-obj.results()
-obj.main_results()
+class Webscrape2:
+    def __init__(self, link):
+        self.link = link
+        result = requests.get(link)
+        rc = result.content
+        self.soup = BeautifulSoup(rc, features='html.parser')
+
+        # the main dictionary where all data is being stored.
+        self.cars_dict = {}
+
+        """
+        example dictionary ->
+        is a template dictionary and
+        also a template for excel first row."""
+        self.cars_dict_example = {
+            'nimi': '-',
+            'liik': '-',
+            'keretüüp': '-',
+            'esmane reg': '-',
+            'mootor': '-',
+            'kütus': '-',
+            'läbisõidumõõdiku näit': '-',
+            'vedav sild': '-',
+            'käigukast': '-',
+            'värvus': '-',
+            'hind': '-',
+            'soodushind': '-',
+            'link': '-'}
+
+    def results(self):
+        results_section = self.soup.find(class_='section search-list')
+
+        # removes all unnecessary trash.
+        results_section.find(class_='insearch-offers-wrap').decompose()
+        results_section.find(class_='c2z-section').decompose()
+
+        # result object ->
+        results = results_section.find_all('div')
+
+        """The following for loop is responsible for creating dictionaries for all of the vehicles"""
+        i = 0
+        for result in results:  # 4
+            try:
+                c_d = result.find(class_='description')
+                car_name = c_d.find('span').get_text()
+                car_page = f"https://www.auto24.ee/{c_d.find('a').get('href')}"
+
+                if c_d:
+                    i += 1
+                self.cars_dict[i] = {}
+                self.cars_dict[i] = self.cars_dict_example.copy()
+                self.cars_dict[i]['nimi'] = car_name
+                self.cars_dict[i]['link'] = car_page
+
+            except AttributeError:
+                ...
+
+    """The following function is responsible for providing 
+        the dictionaries with detailed information
+        from websites. """
+    def main_results(self):
+        # cycles through all of the keys
+        for key in self.cars_dict.keys():
+            if key != 0:
+                # get's the vehicle link and scraps it
+                result = requests.get(self.cars_dict[key]['link'])
+                rc = result.content
+                soup = BeautifulSoup(rc, features='html.parser')
+
+                # main data object ->
+                main_data = soup.find(class_='main-data')
+                sektsioonid = main_data.find_all('tr')
+
+                # for loops through all of the details
+                for sektsioon in sektsioonid:
+                    # get's the details and makes it to a list
+                    tekst = sektsioon.get_text()
+                    tl = tekst.split('\n')
+
+                    # detail category name obj. ->
+                    car_key_old = tl[1]
+                    car_key = car_key_old[:-1].lower()
+
+                    # check's if the key is in dictionary (prevents inserting car VIN code and more stuff)
+                    if car_key in self.cars_dict_example.keys():
+                        car_value = tl[2]
+                        # unicodes the value
+                        car_value = unidecode.unidecode(car_value)
+                        self.cars_dict[key][car_key] = car_value
+
+    def get_dict(self):
+        return self.cars_dict
+
+    def get_example_dict(self):
+        return self.cars_dict_example
