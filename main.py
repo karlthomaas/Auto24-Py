@@ -64,6 +64,5 @@ def scrapper2(link):
 # https://www.auto24.ee/kasutatud/nimekiri.php?b=23&ae=2&bw=720&f2=2011&f1=2007&ssid=14030034
 # https://www.auto24.ee/kasutatud/nimekiri.php?b=4&ae=2&bw=809&f2=2010&f1=2007&ssid=14030330
 
-link = 'https://www.auto24.ee/kasutatud/nimekiri.php?bn=2&a=100&aj=&ae=8&af=50&otsi=otsi+%2818335%29'
-# scrapper1(link)
+link = 'https://www.auto24.ee/kasutatud/nimekiri.php?bn=2&a=100&b=35&g2=4500&ae=8&af=50&ssid=30064259'
 scrapper2(link)

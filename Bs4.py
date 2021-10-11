@@ -129,7 +129,7 @@ class Webscrape2:
         is a template dictionary and
         also a template for excel first row."""
         self.cars_dict_example = {
-            'nimi': '-',
+            'mark': '-',
             'liik': '-',
             'keretüüp': '-',
             'esmane reg': '-',
@@ -141,7 +141,8 @@ class Webscrape2:
             'värvus': '-',
             'hind': '-',
             'soodushind': '-',
-            'link': '-'}
+            'link': '-',
+            'pealkiri': '-'}
 
     def results(self):
         self.result = requests.get(self.link)
@@ -169,12 +170,14 @@ class Webscrape2:
                 c_d = result.find(class_='description')
                 car_name = c_d.find('span').get_text()
                 car_page = f"https://www.auto24.ee/{c_d.find('a').get('href')}"
+                header = result.find(class_='title').get_text()
 
                 if c_d:
                     self.count += 1
                 self.cars_dict[self.count] = {}
                 self.cars_dict[self.count] = self.cars_dict_example.copy()
-                self.cars_dict[self.count]['nimi'] = car_name
+                self.cars_dict[self.count]['pealkiri'] = header
+                self.cars_dict[self.count]['mark'] = car_name
                 self.cars_dict[self.count]['link'] = car_page
 
             except AttributeError:
@@ -202,7 +205,7 @@ class Webscrape2:
             # cycles through all of the keys
             for key in self.cars_dict.keys():
                 i += 1
-                print(f'Gathering information about: ({i}/{len(self.cars_dict)} car! ')
+                print(f'Gathering information about: ({i}/{len(self.cars_dict)}) car! ')
                 if key != 0:
                     # get's the vehicle link and scraps it
                     result = requests.get(self.cars_dict[key]['link'])
