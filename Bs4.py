@@ -118,9 +118,8 @@ class WebScrape:
 class Webscrape2:
     def __init__(self, link):
         self.link = link
-        result = requests.get(link)
-        rc = result.content
-        self.soup = BeautifulSoup(rc, features='html.parser')
+        self.count = 0
+        self.i = 0
 
         # the main dictionary where all data is being stored.
         self.cars_dict = {}
@@ -145,17 +144,26 @@ class Webscrape2:
             'link': '-'}
 
     def results(self):
+        self.result = requests.get(self.link)
+        self.rc = self.result.content
+        self.soup = BeautifulSoup(self.rc, features='html.parser')
+
         results_section = self.soup.find(class_='section search-list')
 
-        # removes all unnecessary trash.
-        results_section.find(class_='insearch-offers-wrap').decompose()
-        results_section.find(class_='c2z-section').decompose()
+        try:
+            # removes all unnecessary trash.
+            results_section.find(class_='insearch-offers-wrap').decompose()
+            results_section.find(class_='c2z-section').decompose()
 
+            # when there's no more trash. (usually page one only has!)
+        except:
+            ...
         # result object ->
         results = results_section.find_all('div')
 
         """The following for loop is responsible for creating dictionaries for all of the vehicles"""
-        i = 0
+        self.i += 1
+        print(f'Scanning page {self.i}')
         for result in results:  # 4
             try:
                 c_d = result.find(class_='description')
@@ -163,47 +171,67 @@ class Webscrape2:
                 car_page = f"https://www.auto24.ee/{c_d.find('a').get('href')}"
 
                 if c_d:
-                    i += 1
-                self.cars_dict[i] = {}
-                self.cars_dict[i] = self.cars_dict_example.copy()
-                self.cars_dict[i]['nimi'] = car_name
-                self.cars_dict[i]['link'] = car_page
+                    self.count += 1
+                self.cars_dict[self.count] = {}
+                self.cars_dict[self.count] = self.cars_dict_example.copy()
+                self.cars_dict[self.count]['nimi'] = car_name
+                self.cars_dict[self.count]['link'] = car_page
 
             except AttributeError:
                 ...
 
+        try:
+            # goes for another round, if there's more!
+
+            next_page_div = self.soup.find(class_='paginator in-footer pc-wide')
+            if not next_page_div:
+                next_page_div = self.soup.find(class_='paginator in-footer')
+
+            next_page = next_page_div.find(class_="next-page")
+            self.link = f"https://www.auto24.ee/{next_page.a.get('href')}"
+            self.results()
+        except Exception as e:
+            ...
     """The following function is responsible for providing 
         the dictionaries with detailed information
         from websites. """
     def main_results(self):
-        # cycles through all of the keys
-        for key in self.cars_dict.keys():
-            if key != 0:
-                # get's the vehicle link and scraps it
-                result = requests.get(self.cars_dict[key]['link'])
-                rc = result.content
-                soup = BeautifulSoup(rc, features='html.parser')
+        try:
+            print('Gathering information for each car!')
+            i = 0
+            # cycles through all of the keys
+            for key in self.cars_dict.keys():
+                i += 1
+                print(f'Gathering information about: ({i}/{len(self.cars_dict)} car! ')
+                if key != 0:
+                    # get's the vehicle link and scraps it
+                    result = requests.get(self.cars_dict[key]['link'])
+                    rc = result.content
+                    soup = BeautifulSoup(rc, features='html.parser')
 
-                # main data object ->
-                main_data = soup.find(class_='main-data')
-                sektsioonid = main_data.find_all('tr')
+                    # main data object ->
+                    main_data = soup.find(class_='main-data')
+                    sektsioonid = main_data.find_all('tr')
 
-                # for loops through all of the details
-                for sektsioon in sektsioonid:
-                    # get's the details and makes it to a list
-                    tekst = sektsioon.get_text()
-                    tl = tekst.split('\n')
+                    # for loops through all of the details
+                    for sektsioon in sektsioonid:
+                        # get's the details and makes it to a list
+                        tekst = sektsioon.get_text()
+                        tl = tekst.split('\n')
 
-                    # detail category name obj. ->
-                    car_key_old = tl[1]
-                    car_key = car_key_old[:-1].lower()
+                        # detail category name obj. ->
+                        car_key_old = tl[1]
+                        car_key = car_key_old[:-1].lower()
 
-                    # check's if the key is in dictionary (prevents inserting car VIN code and more stuff)
-                    if car_key in self.cars_dict_example.keys():
-                        car_value = tl[2]
-                        # unicodes the value
-                        car_value = unidecode.unidecode(car_value)
-                        self.cars_dict[key][car_key] = car_value
+                        # check's if the key is in dictionary (prevents inserting car VIN code and more stuff)
+                        if car_key in self.cars_dict_example.keys():
+                            car_value = tl[2]
+                            # unicodes the value
+                            car_value = unidecode.unidecode(car_value)
+                            self.cars_dict[key][car_key] = car_value
+        except Exception as e:
+            # happends in very few cases, when website is differently built! 1/1000 chance!
+            print(e)
 
     def get_dict(self):
         return self.cars_dict

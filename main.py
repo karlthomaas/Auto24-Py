@@ -51,6 +51,7 @@ def scrapper2(link):
 
     ws.append(headings)
 
+    print('Converting Dictionary -> Excel file!')
     for vehicle in result_dictionay:
         values = list(result_dictionay[vehicle].values())
         ws.append([vehicle] + values)
@@ -63,6 +64,6 @@ def scrapper2(link):
 # https://www.auto24.ee/kasutatud/nimekiri.php?b=23&ae=2&bw=720&f2=2011&f1=2007&ssid=14030034
 # https://www.auto24.ee/kasutatud/nimekiri.php?b=4&ae=2&bw=809&f2=2010&f1=2007&ssid=14030330
 
-link = 'https://www.auto24.ee/kasutatud/nimekiri.php?b=4&ae=2&bw=809&f2=2010&f1=2007&ssid=14030330'
+link = 'https://www.auto24.ee/kasutatud/nimekiri.php?bn=2&a=100&aj=&ae=8&af=50&otsi=otsi+%2818335%29'
 # scrapper1(link)
-# scrapper2(link)
+scrapper2(link)
